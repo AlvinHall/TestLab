@@ -56,3 +56,47 @@ Function Export-TestLab {
 		}
 	}
 }
+
+<#
+.Synopsis
+   Creates the folder structure for a new Test Lab
+.DESCRIPTION
+   Creates the folder structure for a new Test Lab. This is to keep the storage for Test Labs in the same location and make it easy to keep them organised.
+
+   The script currently assumes the root folder for Test Labs is 'C:\Virtual Machines' and creates a new folder for the test lab, e.g. 'C:\Virtual Machines\SCCM' for the SCCM Test Lab.
+
+   ***FEATURES TO ADD***
+   - Create a Domain Controller which has a scripted build to create a new AD Forest called [TESTLAB].internal.
+   - Create a Windows client
+   - Specify AD Domain level, e.g. Server 2012, Server 2012 R2, Server 2016
+.EXAMPLE
+   New-TestLab -Lab SCCM
+.EXAMPLE
+   New-TestLab -Lab SCCM -Root 'C:\Virtual Machines'
+#>
+Function New-TestLab {
+	[CmdletBinding()]
+	Param(
+		[Parameter(Mandatory=$True,Position=0)][String]$Lab,
+		[Parameter(Mandatory=$False,Position=0)][String]$Path='C:\Virtual Machines'
+	)
+	$TestLabRoot = "$Path\$Lab"
+
+	#Create folder structure
+	If (!(Test-Path -Path $Path)) {
+		Write-Verbose "Test Lab Root Folder [$Path] does not exist."
+		Write-Verbose "Creating Test Lab Root Folder - $Path"
+		New-Item -Path $Path -ItemType Directory
+	}
+
+	If (!(Test-Path -Path $TestLabRoot)) {
+		New-Item -Path $TestLabRoot -ItemType Directory
+	} Else {
+		Write-Error "Test Lab $Lab already exists"
+		Break
+	}
+	#Create Domain Controller
+
+	#Create Windows Client
+
+}
