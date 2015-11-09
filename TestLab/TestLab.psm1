@@ -71,8 +71,12 @@ Function Export-TestLab {
    The script currently assumes the root folder for Test Labs is 'C:\Virtual Machines' and creates a new folder for the test lab, e.g. 'C:\Virtual Machines\SCCM' for the SCCM Test Lab.
 
    ***FEATURES TO ADD***
-   - Create a Domain Controller which has a scripted build to create a new AD Forest called [TESTLAB].internal.
+   - Create a Domain Controller
+     - Create a new AD Forest called [TESTLAB].internal
+	 - Create base OU structure
+	 - Import base Security GPOs
    - Create a Windows client
+     - Match the Domain level (Win8.1 for Server 2012 R2, Windows 10 for Server 2016)
    - Specify AD Domain level, e.g. Server 2012 R2, Server 2016
 .EXAMPLE
    New-TestLab -Lab SCCM
@@ -96,7 +100,7 @@ Function New-TestLab {
 		Write-Verbose "Test Lab Root Folder [$LabRoot] does not exist."
 		Write-Verbose "Creating Test Lab Root Folder - $LabRoot"
 		Try {
-			New-Item -Path $LabRoot -ItemType Directory
+			New-Item -Path $LabRoot -ItemType Directory | Out-Null
 		} Catch {
 			Write-Error "Unable to create folder $Path"
 			Break
@@ -106,7 +110,7 @@ Function New-TestLab {
 	If (!(Test-Path -Path $TestLabRoot)) {
 		Write-Verbose "Creating Test Lab folder $TestLab"
 		Try {
-			New-Item -Path $TestLabRoot -ItemType Directory
+			New-Item -Path $TestLabRoot -ItemType Directory | Out-Null
 		} Catch {
 			Write-Error "Unable to create folder $TestLabRoot"
 			Break
@@ -132,37 +136,41 @@ Function New-TestLab {
    ***FEATURES TO ADD***
    - Create new VM based off of templates, e.g. Domain Controller (DC), Member Server (MS), Client, etc.
 .EXAMPLE
-   New-TestLab -Lab SCCM
+   New-TestLabVM -Lab SCCM -Name SCCM
 
-   This will create a new Test Lab called SCCM under the folder C:\Virtual Machines.
+   This will create a VM called SCCM-SCCM in the SCCM Test Lab
 .EXAMPLE
-   New-TestLab -Lab SCCM -Root 'C:\Test Labs'
+   New-TestLab -Lab SCCM -Root 'C:\Test Labs' -Name MAN1 -vCPU 2 -RAM 6GB -HDD @(30GB,45GB)
    
-   This will create a new Test Lab called SCCM under the folder C:\Test Labs.
+   This will create a VM called SCCM-SCCM in the SCCM Test Lab with 2 virtual CPUs, 6GB of RAM and 2 HDDs
 #>
-Function New-TestLab {
+Function New-TestLabVM {
 	[CmdletBinding()]
 	Param(
-		[Parameter(Mandatory=$True,Position=0)][String]$Lab,
-		[Parameter(Mandatory=$False,Position=0)][String]$Path='C:\Virtual Machines'
+		[Parameter(Mandatory=$True,Position=0)][Alias("Lab")][String]$TestLab,
+		[Parameter(Mandatory=$False,Position=0)][Alias("Root","Path")][String]$LabRoot='C:\Virtual Machines',
+		[Parameter(Mandatory=$True,Position=0)][String]$Name,
+		[Parameter(Mandatory=$True,ParameterSetName='VMType',Position=0)][String]$VMType,
+		[Parameter(Mandatory=$True,ParameterSetName='VMUntyped',Position=0)][String]$vCPU,
+		[Parameter(Mandatory=$True,ParameterSetName='VMUntyped',Position=0)][String]$RAM,
+		[Parameter(Mandatory=$True,ParameterSetName='VMUntyped',Position=0)][String]$HDD
+
 	)
-	$TestLabRoot = "$Path\$Lab"
-
-	#Create folder structure
-	If (!(Test-Path -Path $Path)) {
-		Write-Verbose "Test Lab Root Folder [$Path] does not exist."
-		Write-Verbose "Creating Test Lab Root Folder - $Path"
-		New-Item -Path $Path -ItemType Directory
-	}
-
-	If (!(Test-Path -Path $TestLabRoot)) {
-		New-Item -Path $TestLabRoot -ItemType Directory
-	} Else {
-		Write-Error "Test Lab $Lab already exists"
+	$TestLabRoot = "$LabRoot\$TestLab"
+	
+	#Confirm that the Test Lab folder structure exists
+	If (!($TestLabRoot)) {
+		Write-Error "Test Lab $TestLab does not exist"
 		Break
 	}
-	#Create Domain Controller
 
-	#Create Windows Client
-
+	#Create new Virtual Machine
+	Switch ($PsCmdlet.ParameterSetName) {
+		'VMType' {
+			#Create VM based off of a preset template
+		}
+		'VMUntyped' {
+			#Create a new VM
+		}
+	}
 }
