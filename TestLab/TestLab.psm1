@@ -68,11 +68,15 @@ Function Export-TestLab {
    ***FEATURES TO ADD***
    - Create a Domain Controller which has a scripted build to create a new AD Forest called [TESTLAB].internal.
    - Create a Windows client
-   - Specify AD Domain level, e.g. Server 2012, Server 2012 R2, Server 2016
+   - Specify AD Domain level, e.g. Server 2012 R2, Server 2016
 .EXAMPLE
    New-TestLab -Lab SCCM
+
+   This will create a new Test Lab called SCCM under the folder C:\Virtual Machines.
 .EXAMPLE
-   New-TestLab -Lab SCCM -Root 'C:\Virtual Machines'
+   New-TestLab -Lab SCCM -Root 'C:\Test Labs'
+   
+   This will create a new Test Lab called SCCM under the folder C:\Test Labs.
 #>
 Function New-TestLab {
 	[CmdletBinding()]
