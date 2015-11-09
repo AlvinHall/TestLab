@@ -59,9 +59,14 @@ Function Export-TestLab {
 
 <#
 .Synopsis
-   Creates the folder structure for a new Test Lab
+   Creates a new Test Lab
 .DESCRIPTION
-   Creates the folder structure for a new Test Lab. This is to keep the storage for Test Labs in the same location and make it easy to keep them organised.
+   Creates the following for a new Test Lab:
+   - Folder structure
+     - It will create a new folder under the Labs Root folder with the name of the Test Lab
+   - Private Virtual Switch
+     - It will create a new Private Virtual Switch called vSwitch-Private-[Test Lab], e.g. vSwitch-Private-SCCM
+   for a new Test Lab and a new Private Virtual Switch.
 
    The script currently assumes the root folder for Test Labs is 'C:\Virtual Machines' and creates a new folder for the test lab, e.g. 'C:\Virtual Machines\SCCM' for the SCCM Test Lab.
 
@@ -69,6 +74,63 @@ Function Export-TestLab {
    - Create a Domain Controller which has a scripted build to create a new AD Forest called [TESTLAB].internal.
    - Create a Windows client
    - Specify AD Domain level, e.g. Server 2012 R2, Server 2016
+.EXAMPLE
+   New-TestLab -Lab SCCM
+
+   This will create a new Test Lab called SCCM under the folder C:\Virtual Machines.
+.EXAMPLE
+   New-TestLab -Lab SCCM -Root 'C:\Test Labs'
+   
+   This will create a new Test Lab called SCCM under the folder C:\Test Labs.
+#>
+Function New-TestLab {
+	[CmdletBinding()]
+	Param(
+		[Parameter(Mandatory=$True,Position=0)][Alias("Lab")][String]$TestLab,
+		[Parameter(Mandatory=$False,Position=0)][Alias("Root","Path")][String]$LabRoot='C:\Virtual Machines'
+	)
+	$TestLabRoot = "$LabRoot\$TestLab"
+
+	#Create folder structure
+	If (!(Test-Path -Path $LabRoot)) {
+		Write-Verbose "Test Lab Root Folder [$LabRoot] does not exist."
+		Write-Verbose "Creating Test Lab Root Folder - $LabRoot"
+		Try {
+			New-Item -Path $LabRoot -ItemType Directory
+		} Catch {
+			Write-Error "Unable to create folder $Path"
+			Break
+		}
+	}
+
+	If (!(Test-Path -Path $TestLabRoot)) {
+		Write-Verbose "Creating Test Lab folder $TestLab"
+		Try {
+			New-Item -Path $TestLabRoot -ItemType Directory
+		} Catch {
+			Write-Error "Unable to create folder $TestLabRoot"
+			Break
+		}
+	} Else {
+		Write-Error "Test Lab $TestLab already exists"
+		Break
+	}
+	#Create Domain Controller
+
+	#Create Windows Client
+
+}
+
+<#
+.Synopsis
+   Creates a new VM in an existing Test Lab
+.DESCRIPTION
+   Creates a new Virtual Machine in an existing Test Lab
+
+   This will create a new VM based off of an existing template or from completely new parameters. It will connect
+
+   ***FEATURES TO ADD***
+   - Create new VM based off of templates, e.g. Domain Controller (DC), Member Server (MS), Client, etc.
 .EXAMPLE
    New-TestLab -Lab SCCM
 
